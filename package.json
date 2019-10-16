@@ -9,6 +9,7 @@
     "supertest": "3.0.0"
   },
   "scripts": {
+    "start": "react-scripts start",
     "test": "mocha --recursive tests --exit"
   }
 }
