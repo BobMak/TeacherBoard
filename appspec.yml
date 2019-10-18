@@ -1,11 +1,11 @@
 version: 0.0
 os: linux
 files:
-  - source: /package-lock.json
+  - source: ./package-lock.json
     destination: /home/ec2-user/node-website
-  - source: /package.json
+  - source: ./package.json
     destination: /home/ec2-user/node-website
-  - source: /build/
+  - source: ./build
     destination: /home/ec2-user/node-website/build
 hooks:
   AfterInstall:
