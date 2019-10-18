@@ -1,6 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
-import imag from './images.jpg';
 import './App.css';
 
 var Dispatcher = require('flux').Dispatcher;
@@ -41,10 +39,8 @@ class TestMap extends React.Component {
   componentDidMount() {
     const canvas = this.refs.canvas
     const ctx = canvas.getContext("2d")
-    const img = imag
 
     ctx.onload = () => {
-      ctx.drawImage(imag, 0, 0)
       ctx.font = "40px Courier"
       ctx.fillText(this.props.text, 210, 75)
     }
@@ -53,10 +49,6 @@ class TestMap extends React.Component {
       const y = event.layerY
       this.setState({ x: x, y: y});
       ctx.fillRect(x, y, 10, 10)
-    }
-    canvas.onMouseOver = (event) => {
-      const x = event.clientX
-      const y = event.clientY
     }
   }
   render() {
