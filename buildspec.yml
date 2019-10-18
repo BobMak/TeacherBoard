@@ -35,5 +35,5 @@ artifacts:
     - src/*
     - scripts/*
     - node_modules/**/*
-    - public/**/*
+    - build/**/*
     - template-configuration.json
