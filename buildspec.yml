@@ -31,6 +31,7 @@ artifacts:
     - template.yml
     - README.md
     - package.json
+    - package-lock.json
     - appspec.yml
     - src/*
     - scripts/*
