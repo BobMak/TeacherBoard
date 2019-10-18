@@ -23,7 +23,6 @@ class Ball extends React.Component {
   render(){
     const x = (this.state.x.toString()+"px");
     const y = (this.state.y.toString()+"px");
-    console.log(x, y);
     return (
       <button position="absolute" x={x} y={y}>Ball</button>
     );
@@ -50,17 +49,14 @@ class TestMap extends React.Component {
       ctx.fillText(this.props.text, 210, 75)
     }
     canvas.onclick = (event) => {
-      console.log('click'+event);
       const x = event.layerX
       const y = event.layerY
-      console.log(event);
       this.setState({ x: x, y: y});
       ctx.fillRect(x, y, 10, 10)
     }
     canvas.onMouseOver = (event) => {
       const x = event.clientX
       const y = event.clientY
-      console.log('coords x:'+x+" y:"+y);
     }
   }
   render() {
