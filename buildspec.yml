@@ -19,7 +19,7 @@ phases:
       - rm -r node_modules
 
       # Install runtime dependencies
-      - npm install --production
+      # - npm install --production
 
       # Do not remove this statement. This command is required for AWS CodeStar projects.
       # Update the AWS Partition, AWS Region, account ID and project ID in the project ARN in template-configuration.json file so AWS CloudFormation can tag project resources.
@@ -28,12 +28,9 @@ artifacts:
   type: zip
   files:
     - template.yml
-    - README.md
     - package.json
     - package-lock.json
     - appspec.yml
-    - src/*
     - scripts/*
-    - node_modules/**/*
     - build/**/*
     - template-configuration.json
