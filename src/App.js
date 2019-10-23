@@ -1,5 +1,26 @@
 import React from 'react';
-import './App.css';
+import {
+  Button,
+  Collapse,
+  Navbar,
+  NavbarToggler,
+  NavbarBrand,
+  Nav,
+  NavItem,
+  NavLink,
+  UncontrolledDropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem } from 'reactstrap';
+import {
+  Calendar,
+  momentLocalizer } from  'react-big-calendar'
+
+import moment from 'moment'
+// a localizer for BigCalendar
+require('react-big-calendar/lib/css/react-big-calendar.css')
+// var BigCalendar = require('react-big-calendar')
+var localizer = momentLocalizer(moment)
 
 var Dispatcher = require('flux').Dispatcher;
 var assign = require('object-assign');
@@ -27,39 +48,117 @@ class Ball extends React.Component {
   }
 }
 
-class TestMap extends React.Component {
+class Header extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { x: 0, y: 0, TodoStore: { list: [] }};
+    this.state = {
+      x: 0,
+      y: 0,
+      TodoStore: { list: [] },
+      isOpen: false,
+      setIsOpen: false,
+      events: [
+        {
+          start: new Date(),
+          end: new Date(moment().add(1, "days")),
+          title: "Some title"
+        }
+      ]
+    };
   }
   _onMouseMove(e) {
     this.setState({ x: e.screenX, y: e.screenY });
   }
-  componentDidMount() {
-    const canvas = this.refs.canvas
-    const ctx = canvas.getContext("2d")
 
-    ctx.onload = () => {
-      ctx.font = "40px Courier"
-      ctx.fillText(this.props.text, 210, 75)
-    }
-    canvas.onclick = (event) => {
-      const x = event.layerX
-      const y = event.layerY
-      this.setState({ x: x, y: y});
-      ctx.fillRect(x, y, 10, 10)
-    }
-  }
+  _setStuff() { this.setState({ isOpen: !this.state.isOpen }); }
+
   render() {
-    const { x, y } = this.state;
     return (
-      <div className="shopping-list">
-        <h1>Mouse coordinates: { x } { y }</h1>
-        <canvas ref="canvas" width={840} height={625} />
-        <Ball></Ball>
+      <div position="fixed" top="0" left="0" width="100%">
+        <Navbar color="light" light expand="md">
+          <NavbarBrand href="/">reactstrap</NavbarBrand>
+          <NavbarToggler onClick={this._setStuff} />
+          <Collapse isOpen={this.state.isOpen} navbar>
+            <Nav className="ml-auto" navbar>
+              <NavItem>
+                <NavLink href="/components/">Components</NavLink>
+              </NavItem>
+              <NavItem>
+                <NavLink href="https://github.com/reactstrap/reactstrap">GitHub</NavLink>
+              </NavItem>
+              <UncontrolledDropdown nav inNavbar>
+                <DropdownToggle nav caret>
+                  Options
+                </DropdownToggle>
+                <DropdownMenu right>
+                  <DropdownItem>
+                    Option 1
+                  </DropdownItem>
+                  <DropdownItem>
+                    Option 2
+                  </DropdownItem>
+                  <DropdownItem divider />
+                  <DropdownItem>
+                    Reset
+                  </DropdownItem>
+                </DropdownMenu>
+              </UncontrolledDropdown>
+            </Nav>
+          </Collapse>
+        </Navbar>
+        <Button color="danger">Danger!</Button>
       </div>
     );
+  }
+}
+
+class Body extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      page: "Teacher",
+      events: [
+        {
+          start: new Date(),
+          end: new Date(moment().add(1, "days")),
+          title: "Some title"
+        }
+      ]
+    };
+  }
+  // addEvent() {
+  //   setState(
+  //     events=this.events.push({
+  //       start: ,
+  //       end: ,
+  //       title: ""
+  //     })
+  //   )
+  // }
+  render(){
+    switch (this.state.page) {
+      case "Teacher":
+        console.log("teach");
+        return (
+          <div>
+            <Calendar
+              localizer={localizer}
+              defaultDate={new Date()}
+              defaultView="month"
+              events={this.state.events}
+              style={{ height: "100vh" }}
+            />
+          </div>
+        )
+      case "Student":
+        console.log("St");
+        return <div/>
+      default:
+        console.log("404PageNotFound");}
+        return (
+          <div>404PageNotFound</div>
+        )
   }
 }
 
@@ -67,9 +166,8 @@ class TestMap extends React.Component {
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <TestMap text='sauce'>Yes!</TestMap>
-      </header>
+      <Header/>
+      <Body/>
     </div>
   );
 }
