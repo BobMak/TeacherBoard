@@ -2,82 +2,61 @@ import React from 'react';
 import {
   Button,
   Collapse,
-  Navbar,
-  NavbarToggler,
-  NavbarBrand,
-  Nav,
-  NavItem,
-  NavLink,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem } from 'reactstrap';
+  InputGroup, InputGroupAddon, InputGroupText, Input,
+  Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, NavLink,
+  Modal, ModalHeader, ModalBody, ModalFooter,
+  UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem
+} from 'reactstrap';
 import {
   Calendar,
   momentLocalizer } from  'react-big-calendar'
-
 import moment from 'moment'
+import { GoogleLogout } from 'react-google-login';
+
+import Login from './Login';
+import SignIn from './Signin';
 // a localizer for BigCalendar
 require('react-big-calendar/lib/css/react-big-calendar.css')
 // var BigCalendar = require('react-big-calendar')
 var localizer = momentLocalizer(moment)
+var mysql = require('mysql');
 
-var Dispatcher = require('flux').Dispatcher;
-var assign = require('object-assign');
-var d = new Dispatcher();
-
-class Ball extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { x: 0, y: 0, dx: 1, dy: 1 };
-    this.timerID = setInterval(
-      () => this.update(),
-      1000
-    );
-  }
-  update(props) {
-    this.setState({x: this.state.x + this.state.dx, y: this.state.y + this.state.dy})
-    this.render()
-  }
-  render(){
-    const x = (this.state.x.toString()+"px");
-    const y = (this.state.y.toString()+"px");
-    return (
-      <button position="absolute" x={x} y={y}>Ball</button>
-    );
-  }
-}
+// var Dispatcher = require('flux').Dispatcher;
+// var assign = require('object-assign');
+// var d = new Dispatcher();
+//
 
 class Header extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      x: 0,
-      y: 0,
       TodoStore: { list: [] },
       isOpen: false,
       setIsOpen: false,
-      events: [
-        {
-          start: new Date(),
-          end: new Date(moment().add(1, "days")),
-          title: "Some title"
-        }
-      ]
     };
   }
-  _onMouseMove(e) {
-    this.setState({ x: e.screenX, y: e.screenY });
-  }
-
-  _setStuff() { this.setState({ isOpen: !this.state.isOpen }); }
-
+  componentDidMount(){
+    var connection = mysql.createConnection({
+      host     : 'teacherboard.chrqjhfpa44g.us-east-2.rds.amazonaws.com',
+      user     : 'admin1853',
+      password : 'CAMS3onfwm563$',
+      port     : '3306'
+    });
+    connection.connect(function(err) {
+      if (err) {
+        console.error('Database connection failed: ' + err.stack);
+        return;
+      }
+      console.log('Connected to database.');
+    });
+    connection.end();
+  };
   render() {
     return (
       <div position="fixed" top="0" left="0" width="100%">
         <Navbar color="light" light expand="md">
-          <NavbarBrand href="/">reactstrap</NavbarBrand>
+          <NavbarBrand href="/">TeacherBoard</NavbarBrand>
           <NavbarToggler onClick={this._setStuff} />
           <Collapse isOpen={this.state.isOpen} navbar>
             <Nav className="ml-auto" navbar>
@@ -107,7 +86,6 @@ class Header extends React.Component {
             </Nav>
           </Collapse>
         </Navbar>
-        <Button color="danger">Danger!</Button>
       </div>
     );
   }
@@ -117,7 +95,13 @@ class Body extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      page: "Teacher",
+      email: "",
+      password: "",
+      page: "Login",
+      modal: false,
+      currTitle: "",
+      currEvent: null, // The event currently modified in the modal
+      oldEvent: null,  // To find index in events on change
       events: [
         {
           start: new Date(),
@@ -127,19 +111,57 @@ class Body extends React.Component {
       ]
     };
   }
-  // addEvent() {
-  //   setState(
-  //     events=this.events.push({
-  //       start: ,
-  //       end: ,
-  //       title: ""
-  //     })
-  //   )
-  // }
+  getEeventName = e => {
+    console.log('logging', this.state.currEvent.title);
+    return this.state.currEvent.title
+  }
+  editEvent = (event, e) => {
+    console.log('yes', event, e);
+    this.setState({
+      currTitle: event.title,
+      currEvent: event,
+      oldEvent: event,
+      modal: !this.state.modal });
+  }
+  saveEditEvent = e => {
+    var index = this.state.events.indexOf(this.state.oldEvent)
+    var evs = this.state.events
+    evs[index] = this.state.currEvent
+    console.log('old event index', index);
+    this.setState({
+      currEvent: null,
+      oldEvent: null,
+      modal: !this.state.modal,
+      events: evs });
+  }
+  exitEdit = e => {
+    this.setState({
+      currEvent: null,
+      oldEvent: null,
+      modal: !this.state.modal });
+  }
+  validateForm = () => {
+    return this.state.email.length > 0 && this.state.password.length > 0;
+  }
+  handleLogIn = (event) => {
+    console.log('Submit Event');
+    this.setState({ page: "Student" })
+  }
+  handleSignIn = (event) => {
+    console.log('New user');
+    this.setState({ page: "Student" })
+  }
+  setEmail = (val) => {
+    this.setState({ email: val })
+  }
+  setPassword = (val) => {
+    this.setState({ password: val })
+  }
   render(){
     switch (this.state.page) {
-      case "Teacher":
+      case "Student":
         console.log("teach");
+        // var tit = this.state.currEvent.title;
         return (
           <div>
             <Calendar
@@ -147,13 +169,51 @@ class Body extends React.Component {
               defaultDate={new Date()}
               defaultView="month"
               events={this.state.events}
-              style={{ height: "100vh" }}
+              style={{ height: "90vh" }}
+              onSelectEvent={this.editEvent}
             />
+            <Modal isOpen={this.state.modal} className={'className'}>
+              <ModalHeader toggle={this.exitEdit}>{ this.state.currTitle }</ModalHeader>
+              <ModalBody>
+                <InputGroup>
+                  <InputGroupAddon addonType="prepend">
+                    <InputGroupText>Time</InputGroupText>
+                  </InputGroupAddon>
+                  <Input />
+                </InputGroup>
+                <br />
+              </ModalBody>
+              <ModalFooter>
+                <Button color="primary" onClick={this.saveEditEvent}>Save</Button>{' '}
+                <Button color="secondary" onClick={this.exitEdit}>Cancel</Button>
+              </ModalFooter>
+            </Modal>
           </div>
         )
-      case "Student":
-        console.log("St");
-        return <div/>
+      case "Teacher":
+        return (
+          <div></div>
+        )
+      case "Login":
+        return (
+          <Login validateForm={ this.validateForm }
+            setEmail={ this.setEmail }
+            setPassword={ this.setPassword }
+            handleLogIn={ this.handleLogIn }
+            handleSignIn={ e => { this.setState({ page: "SignIn" }) } }/>
+        )
+      case "SignIn":
+        return (
+          <SignIn validateForm={ this.validateForm }
+            setEmail={ this.setEmail }
+            setPassword={ this.setPassword }
+            handleSignIn={ this.handleSignIn }
+            handleLogIn={ e => { this.setState({ page: "Login" }) } }/>
+        )
+      case "Admin":
+        return (
+          <div></div>
+        )
       default:
         console.log("404PageNotFound");}
         return (
