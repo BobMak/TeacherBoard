@@ -2,7 +2,7 @@
 var mysql = require('mysql');
 
 const DB = "teacherboard.chrqjhfpa44g.us-east-2.rds.amazonaws.com"
-const TESTDB = "localhost"
+// const DB = "localhost"
 const PORT = "3306"
 const USER = "admin1853"
 const PASSWORD = "CAMS3onfwm563$"
@@ -18,7 +18,7 @@ app.post('/api', (request, response) => {
     status: 'yes',
   })
   var connection = mysql.createConnection({
-    host     : TESTDB,
+    host     : DB,
     user     : USER,
     password : PASSWORD,
     port     : PORT
@@ -65,7 +65,7 @@ app.post('/schedule', (request, response) => {
 });
 
 app.post('/login', (request, response) => {
-  console.log(request.data, request.body);
+  console.log(request.data, request.body, request.raw);
   var connection = mysql.createConnection({
     host     : DB,
     user     : USER,

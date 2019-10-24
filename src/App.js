@@ -24,7 +24,8 @@ var localizer = momentLocalizer(moment)
 // var assign = require('object-assign');
 // var d = new Dispatcher();
 const HOST = "http://52.15.223.49:3001/"
-const TESTHOST = "http://localhost:3001/"
+// const HOST = "http://13.58.137.105:3001/"
+// const HOST = "http://localhost:3001/"
 
 class Header extends React.Component {
   constructor(props) {
@@ -98,6 +99,11 @@ class Body extends React.Component {
       ]
     };
   }
+  _parseJSON = (response) => {
+    return response.text().then(function(text) {
+      return text ? JSON.parse(text) : {}
+    });
+  }
   componentDidMount() {
     const data = { login: this.state.email, passwod: this.state.passwod };
     const options = {
@@ -111,7 +117,7 @@ class Body extends React.Component {
     };
     // fetch('http://localhost:3001/students', options).then(res => res.json()).then(body => console.log(body));
     fetch(HOST+'login', options)
-      .then(res => res.json())
+      .then(res => res.text())
       .then(data => console.log('Data', data) )
       .catch(error => console.log('Error', error));
     // fetch('http://localhost:3001/students').then(res => res.json()).then(body => console.log(body));
@@ -158,10 +164,10 @@ class Body extends React.Component {
         // 'Content-Type': 'application/x-www-form-urlencoded',
       },
       method: 'POST',
-      mode: 'no-cors',
+      // mode: 'no-cors',
       body: JSON.stringify(data)
     };
-    fetch('http://localhost:3001/api', options).then(response => {
+    fetch(HOST+'api', options).then(response => {
       console.log(response);
      });
   }
