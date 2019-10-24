@@ -1,2 +1,5 @@
 #!/bin/bash
-pkill -f node || echo No node running
+if ( pkill -f node || echo No node running && exit 0 )
+then echo yes
+else echo no
+fi
