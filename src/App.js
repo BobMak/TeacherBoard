@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import {
   Button,
   Collapse,
@@ -96,6 +97,24 @@ class Body extends React.Component {
       ]
     };
   }
+  componentDidMount() {
+    const data = { login: this.state.email, passwod: this.state.passwod };
+    const options = {
+      headers: {
+        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      method: 'GET',
+      mode: 'no-cors',
+      // body: JSON.stringify(data)
+    };
+    // fetch('http://localhost:3001/students', options).then(res => res.json()).then(body => console.log(body));
+    fetch('http://localhost:3001/students', options)
+      .then(res => res.json())
+      .then(data => console.log('Data', data) )
+      .catch(error => console.log('Error', error));
+    // fetch('http://localhost:3001/students').then(res => res.json()).then(body => console.log(body));
+  }
   getEeventName = e => {
     console.log('logging', this.state.currEvent.title);
     return this.state.currEvent.title
@@ -138,9 +157,12 @@ class Body extends React.Component {
         // 'Content-Type': 'application/x-www-form-urlencoded',
       },
       method: 'POST',
+      mode: 'no-cors',
       body: JSON.stringify(data)
     };
-    fetch('http://localhost:3030/api', options)
+    fetch('http://localhost:3001/api', options).then(response => {
+      console.log(response);
+     });
   }
   handleSignIn = (event) => {
     console.log('New user');

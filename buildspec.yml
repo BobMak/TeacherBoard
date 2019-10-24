@@ -30,6 +30,7 @@ artifacts:
     - template.yml
     - package.json
     - package-lock.json
+    - server.js
     - appspec.yml
     - scripts/*
     - build/**/*
