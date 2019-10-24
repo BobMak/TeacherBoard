@@ -8,7 +8,7 @@ files:
   - source: /build/
     destination: /home/ec2-user/node-website/build
   - source: /src/server.js
-  - destination: /home/ec2-user/node-website
+    destination: /home/ec2-user/node-website
 hooks:
   AfterInstall:
     - location: scripts/install_dependencies
