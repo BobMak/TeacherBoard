@@ -23,7 +23,8 @@ var localizer = momentLocalizer(moment)
 // var Dispatcher = require('flux').Dispatcher;
 // var assign = require('object-assign');
 // var d = new Dispatcher();
-//
+const HOST = "http://52.15.223.49:3001/"
+const TESTHOST = "http://localhost:3001/"
 
 class Header extends React.Component {
   constructor(props) {
@@ -81,8 +82,8 @@ class Body extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: "",
-      password: "",
+      email: "admin1853",
+      password: "CAMS3onfwm563$",
       page: "Login",
       modal: false,
       currTitle: "",
@@ -104,12 +105,12 @@ class Body extends React.Component {
         'Content-Type': 'application/json'
         // 'Content-Type': 'application/x-www-form-urlencoded',
       },
-      method: 'GET',
+      method: 'POST',
       mode: 'no-cors',
-      // body: JSON.stringify(data)
+      body: JSON.stringify(data)
     };
     // fetch('http://localhost:3001/students', options).then(res => res.json()).then(body => console.log(body));
-    fetch('http://localhost:3001/students', options)
+    fetch(HOST+'login', options)
       .then(res => res.json())
       .then(data => console.log('Data', data) )
       .catch(error => console.log('Error', error));

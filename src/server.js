@@ -1,5 +1,11 @@
 // var Net = require('net');
-// var mysql = require('mysql');
+var mysql = require('mysql');
+
+const DB = "teacherboard.chrqjhfpa44g.us-east-2.rds.amazonaws.com"
+const TESTDB = "localhost"
+const PORT = "3306"
+const USER = "admin1853"
+const PASSWORD = "CAMS3onfwm563$"
 
 const express = require('express');
 const app = express();
@@ -11,6 +17,23 @@ app.post('/api', (request, response) => {
   response.json({
     status: 'yes',
   })
+  var connection = mysql.createConnection({
+    host     : TESTDB,
+    user     : USER,
+    password : PASSWORD,
+    port     : PORT
+  });
+
+  connection.connect(function(err) {
+    if (err) {
+      console.error('Database connection failed: ' + err.stack);
+      return;
+    }
+
+    console.log('Connected to database.');
+  });
+
+  connection.end();
 });
 
 app.post('/teacher', (request, response) => {
@@ -41,6 +64,28 @@ app.post('/schedule', (request, response) => {
   })
 });
 
+app.post('/login', (request, response) => {
+  console.log(request.data, request.body);
+  var connection = mysql.createConnection({
+    host     : DB,
+    user     : USER,
+    password : PASSWORD,
+    port     : PORT
+  });
+
+  connection.connect(function(err) {
+    if (err) {
+      console.error('Database connection failed: ' + err.stack);
+      return;
+    }
+    console.log('Connected to database.');
+  });
+  connection.end();
+  response.json({
+    status: 'logged in'
+  })
+});
+
 app.get('/teachers', (request, response) => {
   console.log(request);
   response.json({
@@ -50,10 +95,12 @@ app.get('/teachers', (request, response) => {
 
 app.get('/students', (request, response) => {
   console.log(request);
-  response.json({
-    status: 'students',
-    body: 'twet'
-  })
+  // var students = JSON.stringify({ 'st1': 10, 'st2': 11, 'st3': 12 })
+  response.json([
+    { 'st1': 10 },
+    { 'st2': 11 },
+    { 'st3': 12 }
+  ])
 });
 
 app.get('/lessons', (request, response) => {
