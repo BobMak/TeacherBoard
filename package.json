@@ -8,7 +8,8 @@
     "mysql": "^2.17.1",
     "react-google-login": "^5.0.5",
     "react-scripts": "3.1.2",
-    "reactstrap": "^8.1.1"
+    "reactstrap": "^8.1.1",
+    "restify": "^8.4.0"
   },
   "scripts": {
     "start": "react-scripts start",

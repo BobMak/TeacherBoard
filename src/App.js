@@ -19,8 +19,6 @@ import SignIn from './Signin';
 require('react-big-calendar/lib/css/react-big-calendar.css')
 // var BigCalendar = require('react-big-calendar')
 var localizer = momentLocalizer(moment)
-var mysql = require('mysql');
-
 // var Dispatcher = require('flux').Dispatcher;
 // var assign = require('object-assign');
 // var d = new Dispatcher();
@@ -36,22 +34,9 @@ class Header extends React.Component {
       setIsOpen: false,
     };
   }
-  componentDidMount(){
-    var connection = mysql.createConnection({
-      host     : 'teacherboard.chrqjhfpa44g.us-east-2.rds.amazonaws.com',
-      user     : 'admin1853',
-      password : 'CAMS3onfwm563$',
-      port     : '3306'
-    });
-    connection.connect(function(err) {
-      if (err) {
-        console.error('Database connection failed: ' + err.stack);
-        return;
-      }
-      console.log('Connected to database.');
-    });
-    connection.end();
-  };
+  // componentDidMount(){
+  //
+  // };
   render() {
     return (
       <div position="fixed" top="0" left="0" width="100%">
@@ -146,6 +131,16 @@ class Body extends React.Component {
   handleLogIn = (event) => {
     console.log('Submit Event');
     this.setState({ page: "Student" })
+    const data = { login: this.state.email, passwod: this.state.passwod };
+    const options = {
+      headers: {
+        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      method: 'POST',
+      body: JSON.stringify(data)
+    };
+    fetch('http://localhost:3030/api', options)
   }
   handleSignIn = (event) => {
     console.log('New user');
