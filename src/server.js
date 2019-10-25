@@ -13,6 +13,11 @@ const app = express();
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`listening at ${port}`));
 // app.use(express.static('public'));
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.post('/api', (request, response) => {
@@ -39,35 +44,35 @@ app.post('/api', (request, response) => {
   connection.end();
 });
 
-app.post('/teacher', (request, response) => {
+app.post('/api/teacher', (request, response) => {
   console.log(request);
   response.json({
     status: 'yes',
   })
 });
 
-app.post('/student', (request, response) => {
+app.post('/api/student', (request, response) => {
   console.log(request);
   response.json({
     status: 'yes',
   })
 });
 
-app.post('/lesson', (request, response) => {
+app.post('/api/lesson', (request, response) => {
   console.log(request);
   response.json({
     status: 'yes',
   })
 });
 
-app.post('/schedule', (request, response) => {
+app.post('/api/schedule', (request, response) => {
   console.log(request);
   response.json({
     status: 'yes',
   })
 });
 
-app.post('/login', (request, response) => {
+app.post('/api/login', (request, response) => {
   console.log(request.body);
   var connection = mysql.createConnection({
     host     : DB,
@@ -87,15 +92,15 @@ app.post('/login', (request, response) => {
   response.json( { status: 'success' })
 });
 
-app.get('/teachers', (request, response) => {
-  console.log(request);
+app.get('/api/teachers', (request, response) => {
+  console.log("teachers");
   response.json({
     status: 'yes',
   })
 });
 
-app.get('/students', (request, response) => {
-  console.log(request);
+app.get('/api/students', (request, response) => {
+  console.log('students');
   // var students = JSON.stringify({ 'st1': 10, 'st2': 11, 'st3': 12 })
   response.json([
     { 'st1': 10 },
@@ -105,13 +110,13 @@ app.get('/students', (request, response) => {
 });
 
 app.get('/lessons', (req, res) => {
-  console.log(req);
+  console.log('lessons');
   // res.setHeader('Content-Type', 'application/json');
   res.json( { "status": "ok" } )
 });
 
-app.get('/schedules', (request, response) => {
-  console.log(request);
+app.get('/api/schedules', (request, response) => {
+  console.log("schedules");
   response.json({
     status: 'yes',
   })

@@ -1,2 +1,2 @@
 #!/bin/bash
-pkill -f node || exit 0
+pkill -f node && pkill -f serve || exit 0
