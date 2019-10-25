@@ -23,9 +23,9 @@ var localizer = momentLocalizer(moment)
 // var Dispatcher = require('flux').Dispatcher;
 // var assign = require('object-assign');
 // var d = new Dispatcher();
-const HOST = "http://52.15.223.49:3001/"
+// const HOST = "http://52.15.223.49:3001/"
 // const HOST = "http://13.58.137.105:3001/"
-// const HOST = "http://localhost:3001/"
+const HOST = "http://localhost/"
 
 class Header extends React.Component {
   constructor(props) {
@@ -104,22 +104,32 @@ class Body extends React.Component {
       return text ? JSON.parse(text) : {}
     });
   }
+  getLessons = async () => {
+    const response = await fetch('lessons');
+    const body = await response.json();
+    console.log(body);
+    if (response.status !== 200) throw Error(body.message);
+    return body;
+  }
   componentDidMount() {
-    const data = { login: this.state.email, passwod: this.state.passwod };
-    const options = {
-      headers: {
-        'Content-Type': 'application/json'
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify(data)
-    };
-    // fetch('http://localhost:3001/students', options).then(res => res.json()).then(body => console.log(body));
-    fetch(HOST+'login', options)
-      .then(res => res.text())
-      .then(data => console.log('Data', data) )
-      .catch(error => console.log('Error', error));
+    this.getLessons()
+      .then( res => console.log(res.status))
+      .catch( err => console.log(err) )
+    // const data = { login: this.state.email, passwod: this.state.passwod };
+    // const options = {
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //     // 'Content-Type': 'application/x-www-form-urlencoded',
+    //   },
+    //   method: 'GET',  // POST
+    //   mode: 'no-cors',
+    //   // body: JSON.stringify(data)
+    // };
+    // // fetch('http://localhost:3001/students', options).then(res => res.json()).then(body => console.log(body));
+    // fetch(HOST+'lessons', options)  // login
+    //   .then(res => res.json() )
+    //   .then(data => console.log('Data', data) )
+    //   .catch(error => console.log('Error', error));
     // fetch('http://localhost:3001/students').then(res => res.json()).then(body => console.log(body));
   }
   getEeventName = e => {
@@ -154,10 +164,17 @@ class Body extends React.Component {
   validateForm = () => {
     return this.state.email.length > 0 && this.state.password.length > 0;
   }
-  handleLogIn = (event) => {
+  // chaechLogin = async () => {
+  //   const response = await fetch('lessons');
+  //   const body = await response.json();
+  //   console.log(body);
+  //   if (response.status !== 200) throw Error(body.message);
+  //   return body;
+  // }
+  handleLogIn = async (event) => {
     console.log('Submit Event');
     this.setState({ page: "Student" })
-    const data = { login: this.state.email, passwod: this.state.passwod };
+    const data = { login: this.state.email, passwod: this.state.password };
     const options = {
       headers: {
         'Content-Type': 'application/json'
@@ -167,9 +184,9 @@ class Body extends React.Component {
       // mode: 'no-cors',
       body: JSON.stringify(data)
     };
-    fetch(HOST+'api', options).then(response => {
-      console.log(response);
-     });
+    const res = await fetch('login', options);
+    const body = await res.json();
+    console.log(body);
   }
   handleSignIn = (event) => {
     console.log('New user');

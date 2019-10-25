@@ -8,10 +8,13 @@ const USER = "admin1853"
 const PASSWORD = "CAMS3onfwm563$"
 
 const express = require('express');
+const bodyParser = require('body-parser');
 const app = express();
-app.listen(3001, () => console.log('listening at 3001'));
+const port = process.env.PORT || 5000;
+app.listen(port, () => console.log(`listening at ${port}`));
 // app.use(express.static('public'));
-app.use(express.json({ limit: '1mb' }))
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.post('/api', (request, response) => {
   console.log(request);
   response.json({
@@ -65,7 +68,7 @@ app.post('/schedule', (request, response) => {
 });
 
 app.post('/login', (request, response) => {
-  console.log(request.data, request.body, request.raw);
+  console.log(request.body);
   var connection = mysql.createConnection({
     host     : DB,
     user     : USER,
@@ -81,9 +84,7 @@ app.post('/login', (request, response) => {
     console.log('Connected to database.');
   });
   connection.end();
-  response.json({
-    status: 'logged in'
-  })
+  response.json( { status: 'success' })
 });
 
 app.get('/teachers', (request, response) => {
@@ -103,11 +104,10 @@ app.get('/students', (request, response) => {
   ])
 });
 
-app.get('/lessons', (request, response) => {
-  console.log(request);
-  response.json({
-    status: 'yes',
-  })
+app.get('/lessons', (req, res) => {
+  console.log(req);
+  // res.setHeader('Content-Type', 'application/json');
+  res.json( { "status": "ok" } )
 });
 
 app.get('/schedules', (request, response) => {
