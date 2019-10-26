@@ -23,9 +23,9 @@ var localizer = momentLocalizer(moment)
 // var Dispatcher = require('flux').Dispatcher;
 // var assign = require('object-assign');
 // var d = new Dispatcher();
-// const HOST = "http://52.15.223.49/"
+const HOST = "http://52.15.223.49:5000/"
 // const HOST = "http://13.58.137.105:3000/"
-const HOST = "http://localhost:5000/"
+// const HOST = "http://localhost:5000/"
 
 class Header extends React.Component {
   constructor(props) {
@@ -184,7 +184,7 @@ class Body extends React.Component {
       // mode: 'no-cors',
       body: JSON.stringify(data)
     };
-    const res = await fetch('login', options);
+    const res = await fetch(HOST+'login', options);
     const body = await res.json();
     console.log(body);
   }
