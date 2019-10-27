@@ -105,7 +105,7 @@ class Body extends React.Component {
     });
   }
   getLessons = async () => {
-    const response = await fetch(HOST+'lessons');
+    const response = await fetch(HOST+'lessons', { mode: "cors" });
     const body = await response.json();
     console.log(body);
     if (response.status !== 200) throw Error(body.message);
@@ -181,7 +181,7 @@ class Body extends React.Component {
         // 'Content-Type': 'application/x-www-form-urlencoded',
       },
       method: 'POST',
-      // mode: 'no-cors',
+      mode: 'cors',
       body: JSON.stringify(data)
     };
     const res = await fetch(HOST+'login', options);
