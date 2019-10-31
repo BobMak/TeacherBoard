@@ -27,26 +27,31 @@ const HOST = "http://52.15.223.49:5000/"
 // const HOST = "http://13.58.137.105:3000/"
 // const HOST = "http://localhost:5000/"
 
-class Header extends React.Component {
-  constructor(props) {
-    super(props);
+async function post (addr, data) {
+  const options = {
+    headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+    mode: 'cors',
+    body: JSON.stringify(data)
+  };
+  const res = await fetch(HOST+addr, options);
+  return await res.json();
+}
 
-    this.state = {
-      TodoStore: { list: [] },
-      isOpen: false,
-      setIsOpen: false,
-    };
-  }
-  // componentDidMount(){
-  //
-  // };
+async function get (addr) {
+  const res = await fetch(HOST+addr, { mode: "cors" });
+  const bod = await res.json();
+  return bod;
+}
+
+class Header extends React.Component {
   render() {
     return (
       <div position="fixed" top="0" left="0" width="100%">
         <Navbar color="light" light expand="md">
           <NavbarBrand href="/">TeacherBoard</NavbarBrand>
-          <NavbarToggler onClick={this._setStuff} />
-          <Collapse isOpen={this.state.isOpen} navbar>
+          <NavbarToggler onClick={ this.props.toggle } />
+          <Collapse isOpen={ this.props.isOpen } navbar>
             <Nav className="ml-auto" navbar>
               <NavItem>
                 <NavLink href="/components/">Components</NavLink>
@@ -83,8 +88,8 @@ class Body extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: "admin1853",
-      password: "CAMS3onfwm563$",
+      email: "a@",
+      password: "tea",
       page: "Login",
       modal: false,
       currTitle: "",
@@ -96,41 +101,13 @@ class Body extends React.Component {
           end: new Date(moment().add(1, "days")),
           title: "Some title"
         }
-      ]
+      ],
+      isOpen: false
     };
   }
-  _parseJSON = (response) => {
-    return response.text().then(function(text) {
-      return text ? JSON.parse(text) : {}
-    });
-  }
-  getLessons = async () => {
-    const response = await fetch(HOST+'lessons', { mode: "cors" });
-    const body = await response.json();
-    console.log(body);
-    if (response.status !== 200) throw Error(body.message);
-    return body;
-  }
-  componentDidMount() {
-    this.getLessons()
-      .then( res => console.log(res.status))
-      .catch( err => console.log(err) )
-    // const data = { login: this.state.email, passwod: this.state.passwod };
-    // const options = {
-    //   headers: {
-    //     'Content-Type': 'application/json'
-    //     // 'Content-Type': 'application/x-www-form-urlencoded',
-    //   },
-    //   method: 'GET',  // POST
-    //   mode: 'no-cors',
-    //   // body: JSON.stringify(data)
-    // };
-    // // fetch('http://localhost:3001/students', options).then(res => res.json()).then(body => console.log(body));
-    // fetch(HOST+'lessons', options)  // login
-    //   .then(res => res.json() )
-    //   .then(data => console.log('Data', data) )
-    //   .catch(error => console.log('Error', error));
-    // fetch('http://localhost:3001/students').then(res => res.json()).then(body => console.log(body));
+  componentDidMount = async () => {
+    // this.handleLogIn();
+    console.log('logging');
   }
   getEeventName = e => {
     console.log('logging', this.state.currEvent.title);
@@ -164,54 +141,41 @@ class Body extends React.Component {
   validateForm = () => {
     return this.state.email.length > 0 && this.state.password.length > 0;
   }
-  // chaechLogin = async () => {
-  //   const response = await fetch('lessons');
-  //   const body = await response.json();
-  //   console.log(body);
-  //   if (response.status !== 200) throw Error(body.message);
-  //   return body;
-  // }
   handleLogIn = async (event) => {
-    console.log('Submit Event');
-    this.setState({ page: "Student" })
-    const data = { login: this.state.email, passwod: this.state.password };
-    const options = {
-      headers: {
-        'Content-Type': 'application/json'
-        // 'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      method: 'POST',
-      mode: 'cors',
-      body: JSON.stringify(data)
-    };
-    const res = await fetch(HOST+'login', options);
-    const body = await res.json();
+    const data = { login: this.state.email, password: this.state.password };
+    const body = await post('login', data);
     console.log(body);
+    if (body.data == 0) {
+      this.setState({ page: "Dashboard" })
+    }
+    else if (body.data == 1) {
+      this.setState({ page: "Dashboard" })
+    }
+    else if (body.data == 2) {
+      this.setState({ page: "Dashboard" })
+    }
   }
-  handleSignIn = (event) => {
+  handleSignIn = async (event) => {
     console.log('New user');
-    this.setState({ page: "Student" })
-  }
-  setEmail = (val) => {
-    this.setState({ email: val })
-  }
-  setPassword = (val) => {
-    this.setState({ password: val })
+    this.setState({ page: "Dashboard" })
   }
   render(){
     switch (this.state.page) {
-      case "Student":
+      case "Dashboard":
         console.log("teach");
-        // var tit = this.state.currEvent.title;
         return (
           <div>
+            <Header
+              toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
+              isOpen={ this.state.isOpen }
+            />
             <Calendar
-              localizer={localizer}
-              defaultDate={new Date()}
+              localizer={ localizer }
+              defaultDate={ new Date() }
               defaultView="month"
-              events={this.state.events}
-              style={{ height: "90vh" }}
-              onSelectEvent={this.editEvent}
+              events={ this.state.events }
+              style={ { height: "90vh" } }
+              onSelectEvent={ this.editEvent }
             />
             <Modal isOpen={this.state.modal} className={'className'}>
               <ModalHeader toggle={this.exitEdit}>{ this.state.currTitle }</ModalHeader>
@@ -233,27 +197,53 @@ class Body extends React.Component {
         )
       case "Teacher":
         return (
-          <div></div>
+          <div>
+            <Header
+              toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
+              isOpen={ this.state.isOpen }
+            />
+          </div>
         )
       case "Login":
         return (
-          <Login validateForm={ this.validateForm }
-            setEmail={ this.setEmail }
-            setPassword={ this.setPassword }
-            handleLogIn={ this.handleLogIn }
-            handleSignIn={ e => { this.setState({ page: "SignIn" }) } }/>
+          <div>
+            <Header
+              toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
+              isOpen={ this.state.isOpen }
+            />
+            <Login validateForm={ this.validateForm }
+              email=   { this.state.email }
+              password={ this.state.password }
+              setEmail=   { e => { this.setState({ email: e }) } }
+              setPassword={ e => { this.setState({ password: e }) } }
+              handleLogIn={ this.handleLogIn }
+              handleSignIn={ e => { this.setState({ page: "SignIn" }) } }
+            />
+          </div>
         )
       case "SignIn":
         return (
-          <SignIn validateForm={ this.validateForm }
-            setEmail={ this.setEmail }
-            setPassword={ this.setPassword }
-            handleSignIn={ this.handleSignIn }
-            handleLogIn={ e => { this.setState({ page: "Login" }) } }/>
+          <div>
+            <Header
+              toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
+              isOpen={ this.state.isOpen }
+            />
+            <SignIn validateForm={ this.validateForm }
+              setEmail=   { e => { this.setState({ email: e }) } }
+              setPassword={ e => { this.setState({ password: e }) } }
+              handleSignIn={ this.handleSignIn }
+              handleLogIn={ e => { this.setState({ page: "Login" }) } }
+            />
+          </div>
         )
       case "Admin":
         return (
-          <div></div>
+          <div>
+            <Header
+              toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
+              isOpen={ this.state.isOpen }
+            />
+          </div>
         )
       default:
         console.log("404PageNotFound");}
@@ -267,7 +257,6 @@ class Body extends React.Component {
 function App() {
   return (
     <div className="App">
-      <Header/>
       <Body/>
     </div>
   );

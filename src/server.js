@@ -13,14 +13,8 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`listening at ${port}`));
-app.use(cors())
-app.options('*', cors())
-// app.use(function(req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "http://localhost"); // update to match the domain you will make the request from
-//   res.header("Access-Control-Allow-Origin", "http://52.15.223.49"); // update to match the domain you will make the request from
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//   next();
-// });
+app.use(cors());
+app.options('*', cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.post('/api', (request, response) => {
@@ -83,16 +77,21 @@ app.post('/login', (request, response) => {
     password : PASSWORD,
     port     : PORT
   });
-
-  connection.connect(function(err) {
+  connection.query('USE tb');
+  // connection.query('select isAdminTeacher from users where email="a@" and password="tea"', function(err, data) {
+  connection.query('SELECT isAdminTeacher FROM users WHERE email="'+request.body.login + '" and password="' + request.body.password+'"', function(err, data) {
     if (err) {
-      console.error('Database connection failed: ' + err.stack);
-      return;
+      console.log('query failed:', err);
+      response.json( { status: 'dbFailed', data: null })
     }
-    console.log('Connected to database.');
+    else if (data.length == 1) {
+      response.json( { status: 'correct', data: data[0].isAdminTeacher })
+    }
+    else {
+      response.json( { status: 'incorrect', data: null })
+    }
+    connection.end();
   });
-  connection.end();
-  response.json( { status: 'success' })
 });
 
 app.get('/teachers', (request, response) => {
