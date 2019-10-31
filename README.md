@@ -18,4 +18,5 @@ When mysql is running, configure configDB.js and server.js with your credentials
 ### Start
 
 `node src/server.js`
+
 `npm start`
