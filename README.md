@@ -1,6 +1,6 @@
 ## Teacher Board
 
-A tool for managing individual lessons. [Link](http://52.15.223.49/)
+A tool for managing individual lessons. [Link](http://myteacherboard.com/)
 
 ## Development
 
