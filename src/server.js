@@ -105,7 +105,7 @@ app.post('/register', (req, res) => {
   connection.query('SELECT * FROM users WHERE email="'+req.body.email+'"', function(err, data) {
     console.log(data.length)
     if (data.length===0) {
-      connection.query(`insert into users (name, email, password) values ("${req.body.fullName}", "${req.body.email}", "${req.body.password}")`);
+      connection.query(`insert into users (name, email, password, isAdminTeacher) values ("${req.body.fullName}", "${req.body.email}", "${req.body.password}", 0)`);
       res.json( { status: true })
     }
     else {
