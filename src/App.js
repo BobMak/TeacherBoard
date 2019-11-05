@@ -16,13 +16,10 @@ import { GoogleLogout } from 'react-google-login';
 
 import Login from './Login';
 import SignIn from './Signin';
-// a localizer for BigCalendar
+import Info from './Info';
+
 require('react-big-calendar/lib/css/react-big-calendar.css')
-// var BigCalendar = require('react-big-calendar')
 var localizer = momentLocalizer(moment)
-// var Dispatcher = require('flux').Dispatcher;
-// var assign = require('object-assign');
-// var d = new Dispatcher();
 const HOST = "http://52.15.223.49:5000/"
 // const HOST = "http://13.58.137.105:3000/"
 // const HOST = "http://localhost:5000/"
@@ -31,8 +28,8 @@ async function post (addr, data) {
   const options = {
     headers: { 'Content-Type': 'application/json' },
     method: 'POST',
-    mode: 'cors',
-    body: JSON.stringify(data)
+    mode:   'cors',
+    body:   JSON.stringify(data)
   };
   const res = await fetch(HOST+addr, options);
   return await res.json();
@@ -88,21 +85,25 @@ class Body extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      email: "a@",
-      password: "tea",
-      page: "Login",
-      modal: false,
-      currTitle: "",
-      currEvent: null, // The event currently modified in the modal
-      oldEvent: null,  // To find index in events on change
+      email:          "a@",
+      password:      "tea",
+      fullName: "New User",
+      page:        "Login",
+      modal:         false,
+      currTitle:        "",
+      currEvent:      null, // The event currently modified in the modal
+      oldEvent:       null, // To find index in events on change
       events: [
         {
           start: new Date(),
-          end: new Date(moment().add(1, "days")),
+          end:   new Date(moment().add(1, "days")),
           title: "Some title"
         }
       ],
-      isOpen: false
+      isOpen:   false,
+      showInfo: false,
+      typeInfo: 'success',
+      textInfo: 'Yes',
     };
   }
   componentDidMount = async () => {
@@ -118,7 +119,7 @@ class Body extends React.Component {
     this.setState({
       currTitle: event.title,
       currEvent: event,
-      oldEvent: event,
+      oldEvent:  event,
       modal: !this.state.modal });
   }
   saveEditEvent = e => {
@@ -128,15 +129,15 @@ class Body extends React.Component {
     console.log('old event index', index);
     this.setState({
       currEvent: null,
-      oldEvent: null,
-      modal: !this.state.modal,
-      events: evs });
+      oldEvent:  null,
+      modal:    !this.state.modal,
+      events:    evs });
   }
   exitEdit = e => {
     this.setState({
       currEvent: null,
-      oldEvent: null,
-      modal: !this.state.modal });
+      oldEvent:  null,
+      modal:    !this.state.modal });
   }
   validateForm = () => {
     return this.state.email.length > 0 && this.state.password.length > 0;
@@ -145,19 +146,22 @@ class Body extends React.Component {
     const data = { login: this.state.email, password: this.state.password };
     const body = await post('login', data);
     console.log(body);
-    if (body.data == 0) {
+    if (body.data === 0) {
       this.setState({ page: "Dashboard" })
     }
-    else if (body.data == 1) {
+    else if (body.data === 1) {
       this.setState({ page: "Dashboard" })
     }
-    else if (body.data == 2) {
+    else if (body.data === 2) {
       this.setState({ page: "Dashboard" })
     }
   }
-  handleSignIn = async (event) => {
+  handleSignUp = async (event) => {
     console.log('New user');
-    this.setState({ page: "Dashboard" })
+    let res = await post('register', { email: this.state.email, password: this.state.password, fullName: this.state.fullName } );
+    if ( res.status == true ) { 
+      this.setState({ page: "Dashboard", showInfo: true, textInfo: `Welcome, ${this.state.fullName}!`, typeInfo: "success" })
+    } 
   }
   render(){
     switch (this.state.page) {
@@ -169,12 +173,18 @@ class Body extends React.Component {
               toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
               isOpen={ this.state.isOpen }
             />
+            <Info
+              visible = { this.state.showInfo }
+              type =    { this.state.typeInfo }
+              text =    { this.state.textInfo }
+              onDismis ={ () => this.setState( { showInfo: false } ) }
+            />
             <Calendar
-              localizer={ localizer }
-              defaultDate={ new Date() }
-              defaultView="month"
-              events={ this.state.events }
-              style={ { height: "90vh" } }
+              localizer=    { localizer }
+              defaultDate=  { new Date() }
+              defaultView=  "month"
+              events=       { this.state.events }
+              style=        { { height: "90vh" } }
               onSelectEvent={ this.editEvent }
             />
             <Modal isOpen={this.state.modal} className={'className'}>
@@ -189,7 +199,7 @@ class Body extends React.Component {
                 <br />
               </ModalBody>
               <ModalFooter>
-                <Button color="primary" onClick={this.saveEditEvent}>Save</Button>{' '}
+                <Button color="primary"   onClick={this.saveEditEvent}>Save</Button>{' '}
                 <Button color="secondary" onClick={this.exitEdit}>Cancel</Button>
               </ModalFooter>
             </Modal>
@@ -211,12 +221,13 @@ class Body extends React.Component {
               toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
               isOpen={ this.state.isOpen }
             />
-            <Login validateForm={ this.validateForm }
-              email=   { this.state.email }
-              password={ this.state.password }
-              setEmail=   { e => { this.setState({ email: e }) } }
-              setPassword={ e => { this.setState({ password: e }) } }
-              handleLogIn={ this.handleLogIn }
+            <Login 
+              validateForm={ this.validateForm                          }
+              email=       { this.state.email                           }
+              password=    { this.state.password                        }
+              setEmail=    { e => { this.setState({ email: e }) }       }
+              setPassword= { e => { this.setState({ password: e }) }    }
+              handleLogIn= { this.handleLogIn                           }
               handleSignIn={ e => { this.setState({ page: "SignIn" }) } }
             />
           </div>
@@ -228,11 +239,13 @@ class Body extends React.Component {
               toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
               isOpen={ this.state.isOpen }
             />
-            <SignIn validateForm={ this.validateForm }
-              setEmail=   { e => { this.setState({ email: e }) } }
-              setPassword={ e => { this.setState({ password: e }) } }
-              handleSignIn={ this.handleSignIn }
-              handleLogIn={ e => { this.setState({ page: "Login" }) } }
+            <SignIn 
+              validateForm={ this.validateForm                         }
+              setEmail=    { e => { this.setState({ email   : e }) }   }
+              setName=     { e => { this.setState({ fullName: e }) }   }
+              setPassword= { e => { this.setState({ password: e }) }   }
+              handleSignIn={ this.handleSignUp                         }
+              handleLogIn= { e => { this.setState({ page: "Login" }) } }
             />
           </div>
         )

@@ -17,8 +17,7 @@ class SignIn extends React.Component {
           </ModalHeader>
           <ModalBody>
             <InputGroup>
-              <InputGroupAddon addonType="prepend">@</InputGroupAddon>
-              <Input placeholder="email"
+              <Input placeholder="your@email"
                 autoFocus
                 type="email"
                 value={this.props.email}
@@ -26,7 +25,6 @@ class SignIn extends React.Component {
             </InputGroup>
             <br />
             <InputGroup>
-              <InputGroupAddon addonType="prepend">@</InputGroupAddon>
               <Input placeholder="password"
                 value={this.props.password}
                 onChange={e => this.props.setPassword(e.target.value)}
@@ -34,7 +32,6 @@ class SignIn extends React.Component {
             </InputGroup>
             <br />
             <InputGroup>
-              <InputGroupAddon addonType="prepend">@</InputGroupAddon>
               <Input placeholder="password"
                 value={this.props.password}
                 onChange={e => this.props.setPassword(e.target.value)}
@@ -44,9 +41,9 @@ class SignIn extends React.Component {
             <InputGroup>
               <InputGroupAddon addonType="prepend">@</InputGroupAddon>
               <Input placeholder="Full name"
-                value={this.props.password}
-                onChange={e => this.props.setPassword(e.target.value)}
-                type="password"/>
+                value={this.props.name}
+                onChange={e => this.props.setName(e.target.value)}
+                type="name"/>
             </InputGroup>
             <br />
             <Button block bsSize="large" color='danger' disabled={!this.props.validateForm()}
