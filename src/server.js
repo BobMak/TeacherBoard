@@ -16,120 +16,107 @@ app.use    (cors());
 app.options('*', cors());
 app.use    (bodyParser.json());
 app.use    (bodyParser.urlencoded({ extended: true }));
-app.post   ('/api', (request, response) => {
-  console.log(request);
-  response.json({
-    status: 'yes',
-  })
-  var connection = mysql.createConnection({
+
+query = async (q, f) => {
+  var connection = await mysql.createConnection({
     host     : DB,
     user     : USER,
     password : PASSWORD,
     port     : PORT
   });
+  await connection.query('USE tb');
+  await connection.query(q, (err, data) => f(err, data) );
+}
 
-  connection.connect(function(err) {
-    if (err) {
-      console.error('Database connection failed: ' + err.stack);
-      return;
-    }
-
-    console.log('Connected to database.');
-  });
-
-  connection.end();
-});
-
-app.post('/teacher', (request, response) => {
-  console.log(request);
-  response.json({
+app.post('/teacher', (req, res) => {
+  console.log(req);
+  res.json({
     status: 'yes',
   })
 });
 
-app.post('/student', (request, response) => {
-  console.log(request);
-  response.json({
+app.post('/student', (req, res) => {
+  console.log(req);
+  res.json({
     status: 'yes',
   })
 });
 
-app.post('/lesson', (request, response) => {
-  console.log(request);
-  response.json({
+app.post('/lesson', (req, res) => {
+  console.log(req);
+  res.json({
     status: 'yes',
   })
 });
 
-app.post('/schedule', (request, response) => {
-  console.log(request);
-  response.json({
+app.post('/schedule', (req, res) => {
+  console.log(req);
+  res.json({
     status: 'yes',
   })
 });
 
-app.post('/login', (request, response) => {
-  console.log(request.body);
-  var connection = mysql.createConnection({
-    host     : DB,
-    user     : USER,
-    password : PASSWORD,
-    port     : PORT
-  });
-  connection.query('USE tb');
-  // connection.query('select isAdminTeacher from users where email="a@" and password="tea"', function(err, data) {
-  connection.query('SELECT isAdminTeacher FROM users WHERE email="'+request.body.login + '" and password="' + request.body.password+'"', function(err, data) {
-    if (err) {
-      console.log('query failed:', err);
-      response.json( { status: 'dbFailed', data: null })
-    }
-    else if (data.length == 1) {
-      response.json( { status: 'correct', data: data[0].isAdminTeacher })
+app.post('/addTeacher', (req, res) => {
+  console.log(req.body);
+  query('SELECT isAdminTeacher FROM users WHERE email="'+req.body.email+'"', function (err, data) { 
+    console.log('res: ', err, data)
+    if (data.length===1 && data.isAdminTeacher==0) {
+      query('UPDATE users SET isAdminTeacher=1 WHERE email="'+req.body.email+'"', function (err, data) {
+        if (err) { console.log(err); res.json({ status: 1 }) }
+        else     { res.json({ status: 0 }) }
+      })
     }
     else {
-      response.json( { status: 'incorrect', data: null })
+      res.json({ status: 2 })
     }
-    connection.end();
   });
+});
+
+app.post('/login', (req, res) => {
+  console.log(req.body);
+  query('SELECT isAdminTeacher FROM users WHERE email="'+req.body.login + '" and password="' + req.body.password+'"', function (err, data) { 
+    console.log('res: ', err, data)
+      if (err) {
+        console.log('query failed:', err);
+        res.json( { status: 'dbFailed', data: null })
+      }
+      else if (data.length == 1) {
+        res.json( { status: 'correct', data: data[0].isAdminTeacher })
+      }
+      else {
+        res.json( { status: 'incorrect', data: null })
+      }
+    });
 });
 
 app.post('/register', (req, res) => {
   console.log(req.body);
-  var connection = mysql.createConnection({
-    host     : DB,
-    user     : USER,
-    password : PASSWORD,
-    port     : PORT
-  });
-  connection.query('USE tb');
-  connection.query('SELECT * FROM users WHERE email="'+req.body.email+'"', function(err, data) {
+  query('SELECT * FROM users WHERE email="'+req.body.email+'"', function (err, data) {
     console.log(data.length)
     if (data.length===0) {
-      connection.query(`insert into users (name, email, password, isAdminTeacher) values ("${req.body.fullName}", "${req.body.email}", "${req.body.password}", 0)`);
-      res.json( { status: true })
+      query(`insert into users (name, email, password, isAdminTeacher) values ("${req.body.fullName}", "${req.body.email}", "${req.body.password}", 0)`, (err, da) => {
+        res.json( { status: true })});
     }
     else {
       res.json( { status: false })
     }
-    connection.end();
   });
 });
 
-app.get('/teachers', (request, response) => {
-  console.log("teachers");
-  response.json({
-    status: 'yes',
-  })
+app.get('/teachers', (req, res) => {
+  console.log('teachers');
+  query('SELECT * FROM users WHERE isAdminTeacher=1 or isAdminTeacher=2', function (err, data) {
+    console.log('teachers: ', data)
+    res.json( { teachers: data.map( (res => { return { email: res.email, name: res.name }; })) } )
+  });
 });
 
-app.get('/students', (request, response) => {
+app.get('/students', (req, res) => {
   console.log('students');
-  // var students = JSON.stringify({ 'st1': 10, 'st2': 11, 'st3': 12 })
-  response.json([
-    { 'st1': 10 },
-    { 'st2': 11 },
-    { 'st3': 12 }
-  ])
+  query('SELECT * FROM users WHERE isAdminTeacher=0', function (err, data) {
+    console.log('students: ', data)
+    res.json( { students: data.map( (res => { return { email: res.email, name: res.name }; })) } )
+  });
 });
 
 app.get('/lessons', (req, res) => {
@@ -138,9 +125,9 @@ app.get('/lessons', (req, res) => {
   res.json( { "status": "ok" } )
 });
 
-app.get('/schedules', (request, response) => {
+app.get('/schedules', (req, res) => {
   console.log("schedules");
-  response.json({
+  res.json({
     status: 'yes',
   })
 });

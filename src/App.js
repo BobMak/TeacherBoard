@@ -17,29 +17,11 @@ import { GoogleLogout } from 'react-google-login';
 import Login from './Login';
 import SignIn from './Signin';
 import Info from './Info';
+import { post, get } from './Utils';
+import Admin from './Admin';
 
 require('react-big-calendar/lib/css/react-big-calendar.css')
 var localizer = momentLocalizer(moment)
-const HOST = "http://52.15.223.49:5000/"
-// const HOST = "http://13.58.137.105:3000/"
-// const HOST = "http://localhost:5000/"
-
-async function post (addr, data) {
-  const options = {
-    headers: { 'Content-Type': 'application/json' },
-    method: 'POST',
-    mode:   'cors',
-    body:   JSON.stringify(data)
-  };
-  const res = await fetch(HOST+addr, options);
-  return await res.json();
-}
-
-async function get (addr) {
-  const res = await fetch(HOST+addr, { mode: "cors" });
-  const bod = await res.json();
-  return bod;
-}
 
 class Header extends React.Component {
   render() {
@@ -85,12 +67,14 @@ class Body extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      email:          "a@",
-      password:      "tea",
+      email:          "a@", // User email
+      addTeachEmail:    "", // Teacher email in add teacher window on Admin page
+      password:      "tea", 
       fullName: "New User",
       page:        "Login",
-      modal:         false,
-      currTitle:        "",
+      modal:         false, // modal state for login/signIn
+      opAddTeacher:  false, // modal state for add teacher on Admin page
+      currTitle:        "", // Current event title
       currEvent:      null, // The event currently modified in the modal
       oldEvent:       null, // To find index in events on change
       events: [
@@ -100,19 +84,32 @@ class Body extends React.Component {
           title: "Some title"
         }
       ],
-      isOpen:   false,
-      showInfo: false,
-      typeInfo: 'success',
-      textInfo: 'Yes',
+      students:        [], // All students in admin page
+      teachers:        [], 
+      isOpen:       false, // Header state
+      showInfo:     false, // Notification modal state
+      typeInfo: 'success', // color
+      textInfo:     'Yes', // text
     };
   }
   componentDidMount = async () => {
-    // this.handleLogIn();
     console.log('logging');
   }
   getEeventName = e => {
     console.log('logging', this.state.currEvent.title);
     return this.state.currEvent.title
+  }
+  // When admin page is loaded
+  getStudents = async () => {
+    let res = await get( 'students' );
+    console.log('got students', res)
+    this.setState( { students: res.students } );
+  }
+  // When admin page is loaded
+  getTeachers = async () => {
+    let res = await get( 'teachers' );
+    console.log('got tescers', res)
+    this.setState( { teachers: res.teachers } );
   }
   editEvent = (event, e) => {
     console.log('yes', event, e);
@@ -139,6 +136,20 @@ class Body extends React.Component {
       oldEvent:  null,
       modal:    !this.state.modal });
   }
+  // When admin adds the specified email
+  addTeacher = async () => {
+    let res = await post( 'addTeacher', { email: this.state.addTeachEmail } );
+    if (res.status===0) {
+      this.showInfo( `Added ${this.state.addTeachEmail} to teachers`, "success");
+    }
+    else if (res.status===1) {
+      this.showInfo( `Can't add ${this.state.addTeachEmail} to teachers`, "warning");
+    }
+    else {
+      this.showInfo( `Can't add ${this.state.addTeachEmail} to teachers`, "danger");
+    }
+    this.setState( {opAddTeacher: false });
+  }
   validateForm = () => {
     return this.state.email.length > 0 && this.state.password.length > 0;
   }
@@ -153,36 +164,31 @@ class Body extends React.Component {
       this.setState({ page: "Dashboard" })
     }
     else if (body.data === 2) {
-      this.setState({ page: "Dashboard" })
+      this.setState({ page: "Admin" })
     }
   }
+  // When user creates account
   handleSignUp = async (event) => {
     console.log('New user');
     let res = await post('register', { email: this.state.email, password: this.state.password, fullName: this.state.fullName } );
     if ( res.status == true ) { 
-      this.setState({ page: "Dashboard", showInfo: true, textInfo: `Welcome, ${this.state.fullName}!`, typeInfo: "success" })
+      this.setState({ page: "Dashboard" });
+      this.showInfo( `Welcome, ${this.state.fullName}!`, "success");
     } 
   }
-  render(){
+  showInfo(message, type) {
+    this.setState( {showInfo: true, textInfo: message, typeInfo: type} )
+    setTimeout( () => { this.setState( {showInfo: false} ) }, 3000 );
+  }
+  view(){
     switch (this.state.page) {
       case "Dashboard":
-        console.log("teach");
         return (
           <div>
-            <Header
-              toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
-              isOpen={ this.state.isOpen }
-            />
-            <Info
-              visible = { this.state.showInfo }
-              type =    { this.state.typeInfo }
-              text =    { this.state.textInfo }
-              onDismis ={ () => this.setState( { showInfo: false } ) }
-            />
             <Calendar
               localizer=    { localizer }
               defaultDate=  { new Date() }
-              defaultView=  "month"
+              defaultView=  "week"
               events=       { this.state.events }
               style=        { { height: "90vh" } }
               onSelectEvent={ this.editEvent }
@@ -207,65 +213,69 @@ class Body extends React.Component {
         )
       case "Teacher":
         return (
-          <div>
-            <Header
-              toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
-              isOpen={ this.state.isOpen }
-            />
-          </div>
+          <Header
+            toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
+            isOpen={ this.state.isOpen }
+          />
         )
       case "Login":
         return (
-          <div>
-            <Header
-              toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
-              isOpen={ this.state.isOpen }
-            />
-            <Login 
-              validateForm={ this.validateForm                          }
-              email=       { this.state.email                           }
-              password=    { this.state.password                        }
-              setEmail=    { e => { this.setState({ email: e }) }       }
-              setPassword= { e => { this.setState({ password: e }) }    }
-              handleLogIn= { this.handleLogIn                           }
-              handleSignIn={ e => { this.setState({ page: "SignIn" }) } }
-            />
-          </div>
+          <Login 
+            validateForm={ this.validateForm                          }
+            email=       { this.state.email                           }
+            password=    { this.state.password                        }
+            setEmail=    { e => { this.setState({ email: e }) }       }
+            setPassword= { e => { this.setState({ password: e }) }    }
+            handleLogIn= { this.handleLogIn                           }
+            handleSignIn={ e => { this.setState({ page: "SignIn" }) } }
+          />
         )
       case "SignIn":
         return (
-          <div>
-            <Header
-              toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
-              isOpen={ this.state.isOpen }
-            />
-            <SignIn 
-              validateForm={ this.validateForm                         }
-              setEmail=    { e => { this.setState({ email   : e }) }   }
-              setName=     { e => { this.setState({ fullName: e }) }   }
-              setPassword= { e => { this.setState({ password: e }) }   }
-              handleSignIn={ this.handleSignUp                         }
-              handleLogIn= { e => { this.setState({ page: "Login" }) } }
-            />
-          </div>
+          <SignIn 
+            validateForm={ this.validateForm                         }
+            setEmail=    { e => { this.setState({ email   : e }) }   }
+            setName=     { e => { this.setState({ fullName: e }) }   }
+            setPassword= { e => { this.setState({ password: e }) }   }
+            handleSignIn={ this.handleSignUp                         }
+            handleLogIn= { e => { this.setState({ page: "Login" }) } }
+          />
         )
       case "Admin":
         return (
-          <div>
-            <Header
-              toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
-              isOpen={ this.state.isOpen }
-            />
-          </div>
+          <Admin
+            getStudents= { (e) => this.getStudents() }
+            students=    { this.state.students       }
+            getTeachers= { (e) => this.getTeachers() }
+            teachers=    { this.state.teachers       }
+            addTeacher=  { (e) => this.addTeacher() }
+            opAddTeacher={ this.state.opAddTeacher   }
+            showAddTeach={ (e) => this.setState( {opAddTeacher: true  }) }
+            hideAddTeach={ (e) => this.setState( {opAddTeacher: false }) }
+            addTeachEmail={ this.state.addTeachEmail }
+            setTeachEmail={ (e) => this.setState( {addTeachEmail: e} ) }
+          />
         )
       default:
-        console.log("404PageNotFound");}
-        return (
-          <div>404PageNotFound</div>
-        )
+        return (<div>404PageNotFound</div>)
+    }
+  }    
+  render(){
+    return (
+      <div>
+        <Header
+          toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
+          isOpen={ this.state.isOpen }
+        />
+        <Info
+          visible = { this.state.showInfo }
+          typeInfo ={ this.state.typeInfo }
+          text =    { this.state.textInfo }
+        />
+        { this.view() }
+      </div> );
   }
 }
-
 
 function App() {
   return (

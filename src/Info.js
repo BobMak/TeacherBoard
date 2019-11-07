@@ -4,16 +4,13 @@ import {
   Modal, ModalBody
 } from 'reactstrap';
 import { setTimeout } from 'timers';
+import { type } from 'os';
 
 class Info extends React.Component {
-  componentDidMount(){
-    console.log('alert timer started');
-    setTimeout( this.props.onDismis, 3000 );
-  }
   render(){
     return (
       <Modal isOpen={ this.props.visible } backdrop={false}>
-        <Alert style={{height: "100%"}}>
+        <Alert color={ this.props.typeInfo } style={{marginBottom: "0px"}}>
           { this.props.text }
         </Alert>
       </Modal>
