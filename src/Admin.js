@@ -8,10 +8,6 @@ import {
 } from 'reactstrap';
 
 class Admin extends React.Component {
-  componentDidMount = async () => {
-    this.props.getStudents();
-    this.props.getTeachers();
-  }
   showStudent = ( student ) => {
     return (
       <Card style={{marginBottom:"5px"}}>
@@ -59,7 +55,7 @@ class Admin extends React.Component {
             <Card>
               <CardHeader>{ "Students" }</CardHeader>
               <CardBody>
-                { this.props.students.map( (st) => this.showStudent(st) ) }
+                { Object.values(this.props.students).map( (st) => this.showStudent(st) ) }
               </CardBody>
             </Card>
           </Col>
@@ -67,7 +63,7 @@ class Admin extends React.Component {
             <Card>
               <CardHeader>{ "Teachers" }</CardHeader>
               <CardBody>
-                { this.props.teachers.map( (tc) => this.showTeacher(tc) ) }
+                { Object.values(this.props.teachers).map( (tc) => this.showTeacher(tc) ) }
               </CardBody>
               <CardFooter>
                 <Button onClick={ this.props.showAddTeach }>{ "Add teacher" }</Button>

@@ -1,4 +1,4 @@
 #!/bin/bash
 cd /home/ec2-user/node-website
 export PORT=80
-node config.js && forever start -c "serve" build -p 80 && forever start -c "node" server.js
+forever start -c "serve" build -p 80 && forever start -c "node" server.js

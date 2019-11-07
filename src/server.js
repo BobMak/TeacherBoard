@@ -28,28 +28,15 @@ query = async (q, f) => {
   await connection.query(q, (err, data) => f(err, data) );
 }
 
-app.post('/teacher', (req, res) => {
+app.post('/addLesson', (req, res) => {
   console.log(req);
-  res.json({
-    status: 'yes',
-  })
+  query(`insert into lessons (teacherID, studentID, room, time, duration, status) values (${req.body.tid}, ${req.body.sid}, ${req.body.room}, "${req.body.time}", ${req.body.len}, 0)`, (err, data) => {
+    if (err) { res.json({ status: false }) }
+    else { res.json({ status: true }) }
+  });
 });
 
-app.post('/student', (req, res) => {
-  console.log(req);
-  res.json({
-    status: 'yes',
-  })
-});
-
-app.post('/lesson', (req, res) => {
-  console.log(req);
-  res.json({
-    status: 'yes',
-  })
-});
-
-app.post('/schedule', (req, res) => {
+app.post('/addSchedule', (req, res) => {
   console.log(req);
   res.json({
     status: 'yes',
@@ -59,10 +46,9 @@ app.post('/schedule', (req, res) => {
 app.post('/addTeacher', (req, res) => {
   console.log(req.body);
   query('SELECT isAdminTeacher FROM users WHERE email="'+req.body.email+'"', function (err, data) { 
-    console.log('res: ', err, data)
     if (data.length===1 && data.isAdminTeacher==0) {
       query('UPDATE users SET isAdminTeacher=1 WHERE email="'+req.body.email+'"', function (err, data) {
-        if (err) { console.log(err); res.json({ status: 1 }) }
+        if (err) { res.json({ status: 1 }) }
         else     { res.json({ status: 0 }) }
       })
     }
@@ -74,25 +60,16 @@ app.post('/addTeacher', (req, res) => {
 
 app.post('/login', (req, res) => {
   console.log(req.body);
-  query('SELECT isAdminTeacher FROM users WHERE email="'+req.body.login + '" and password="' + req.body.password+'"', function (err, data) { 
-    console.log('res: ', err, data)
-      if (err) {
-        console.log('query failed:', err);
-        res.json( { status: 'dbFailed', data: null })
-      }
-      else if (data.length == 1) {
-        res.json( { status: 'correct', data: data[0].isAdminTeacher })
-      }
-      else {
-        res.json( { status: 'incorrect', data: null })
-      }
+  query('SELECT id, isAdminTeacher FROM users WHERE email="'+req.body.login + '" and password="' + req.body.password+'"', function (err, data) { 
+      if (err)                   { res.json( { status: 2,   data: -1 }) }
+      else if (data.length == 1) { res.json( { status: 0,   data: data[0].isAdminTeacher, id: data[0].id }) }
+      else                       { res.json( { status: 1,   data: -1 }) }
     });
 });
 
 app.post('/register', (req, res) => {
   console.log(req.body);
   query('SELECT * FROM users WHERE email="'+req.body.email+'"', function (err, data) {
-    console.log(data.length)
     if (data.length===0) {
       query(`insert into users (name, email, password, isAdminTeacher) values ("${req.body.fullName}", "${req.body.email}", "${req.body.password}", 0)`, (err, da) => {
         res.json( { status: true })});
@@ -106,28 +83,48 @@ app.post('/register', (req, res) => {
 app.get('/teachers', (req, res) => {
   console.log('teachers');
   query('SELECT * FROM users WHERE isAdminTeacher=1 or isAdminTeacher=2', function (err, data) {
-    console.log('teachers: ', data)
-    res.json( { teachers: data.map( (res => { return { email: res.email, name: res.name }; })) } )
+    res.json( { teachers: data.map( (p => { return { email: p.email, name: p.name, id: p.id }; })) } )
   });
 });
 
 app.get('/students', (req, res) => {
   console.log('students');
   query('SELECT * FROM users WHERE isAdminTeacher=0', function (err, data) {
-    console.log('students: ', data)
-    res.json( { students: data.map( (res => { return { email: res.email, name: res.name }; })) } )
+    res.json( { students: data.map( (p => { return { email: p.email, name: p.name, id: p.id }; })) } )
   });
 });
 
-app.get('/lessons', (req, res) => {
-  console.log('lessons');
-  // res.setHeader('Content-Type', 'application/json');
-  res.json( { "status": "ok" } )
+app.get('/getAllLessons', (req, res) => {
+  console.log('getAllLessons');
+  query('SELECT * FROM lessons', function (err, data) {
+    res.json( { students: data.map( (p => { return { tid: p.teacherID, sid: p.studentID, time: p.time, len: p.duration, status: p.status }; })) } )
+  });
+});
+
+app.post('/getUserLessons', (req, res) => {
+  console.log('getUserLessons ', req.body);
+  if ( "id" in req.body === false ) { res.json( {lessons: []} ) }
+  query(`SELECT * FROM lessons WHERE teacherID=${req.body.id} or studentID=${req.body.id};`, function (err, data) {
+    console.log(err, data);
+    if (data.length!=0) {
+      res.json( { lessons: data.map( (p => { return { tid: p.teacherID, sid: p.studentID, room: p.room, time: p.time, len: p.duration, status: p.status }; })) } )
+    }
+    else { res.json( {lessons: []} ) }
+  });
+});
+
+app.post('/getRoomTime', (req, res) => {
+  console.log('getRoomTime');
+  query(`SELECT time, duration status FROM lessons WHERE room=${req.body.room};`, function (err, data) {
+    console.log(data);
+    res.json( { lessons: data.map( (p => { return { tid: p.teacherID, sid: p.studentID, room: p.room, time: p.time, len: p.duration, status: p.status }; })) } )
+  });
 });
 
 app.get('/schedules', (req, res) => {
-  console.log("schedules");
-  res.json({
-    status: 'yes',
-  })
-});
+  console.log('schedules');
+  query(`SELECT time, duration status FROM lessons WHERE room=${req.room};`, function (err, data) {
+    console.log(data);
+    res.json( { lessons: data.map( (p => { return { tid: p.teacherID, sid: p.studentID, room: p.room, time: p.time, len: p.duration, status: p.status }; })) } )
+  });
+})

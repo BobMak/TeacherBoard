@@ -2,11 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {
   Button,
-  Collapse,
   InputGroup, InputGroupAddon, InputGroupText, Input,
-  Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, NavLink,
   Modal, ModalHeader, ModalBody, ModalFooter,
-  UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem
 } from 'reactstrap';
 import {
   Calendar,
@@ -14,6 +11,7 @@ import {
 import moment from 'moment'
 import { GoogleLogout } from 'react-google-login';
 
+import Header from './Header';
 import Login from './Login';
 import SignIn from './Signin';
 import Info from './Info';
@@ -23,50 +21,12 @@ import Admin from './Admin';
 require('react-big-calendar/lib/css/react-big-calendar.css')
 var localizer = momentLocalizer(moment)
 
-class Header extends React.Component {
-  render() {
-    return (
-      <div position="fixed" top="0" left="0" width="100%">
-        <Navbar color="light" light expand="md">
-          <NavbarBrand href="/">TeacherBoard</NavbarBrand>
-          <NavbarToggler onClick={ this.props.toggle } />
-          <Collapse isOpen={ this.props.isOpen } navbar>
-            <Nav className="ml-auto" navbar>
-              <NavItem>
-                <NavLink href="/components/">Components</NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink href="https://github.com/BobMak/TeacherBoard">GitHub</NavLink>
-              </NavItem>
-              <UncontrolledDropdown nav inNavbar>
-                <DropdownToggle nav caret>
-                  Options
-                </DropdownToggle>
-                <DropdownMenu right>
-                  <DropdownItem>
-                    Option 1
-                  </DropdownItem>
-                  <DropdownItem>
-                    Option 2
-                  </DropdownItem>
-                  <DropdownItem divider />
-                  <DropdownItem>
-                    Reset
-                  </DropdownItem>
-                </DropdownMenu>
-              </UncontrolledDropdown>
-            </Nav>
-          </Collapse>
-        </Navbar>
-      </div>
-    );
-  }
-}
-
 class Body extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      id:             null,
+      isAdminTeacher: null,
       email:          "a@", // User email
       addTeachEmail:    "", // Teacher email in add teacher window on Admin page
       password:      "tea", 
@@ -84,8 +44,8 @@ class Body extends React.Component {
           title: "Some title"
         }
       ],
-      students:        [], // All students in admin page
-      teachers:        [], 
+      students:        {}, // All students in admin page
+      teachers:        {}, 
       isOpen:       false, // Header state
       showInfo:     false, // Notification modal state
       typeInfo: 'success', // color
@@ -94,6 +54,8 @@ class Body extends React.Component {
   }
   componentDidMount = async () => {
     console.log('logging');
+    this.getStudents();
+    this.getTeachers();
   }
   getEeventName = e => {
     console.log('logging', this.state.currEvent.title);
@@ -102,14 +64,31 @@ class Body extends React.Component {
   // When admin page is loaded
   getStudents = async () => {
     let res = await get( 'students' );
-    console.log('got students', res)
-    this.setState( { students: res.students } );
+    var students = {};
+    res.students.map( s => { students[s.id]={email: s.email, name: s.name} } );
+    console.log('students are', students);
+    this.setState( { students: students } );
   }
   // When admin page is loaded
   getTeachers = async () => {
     let res = await get( 'teachers' );
+    var teachers = {};
+    res.teachers.map( s => { teachers[s.id]={email: s.email, name: s.name} })
+    console.log('teachers are', teachers)
+    this.setState( { teachers: teachers } );
+  }
+  getAllLessons = async () => {
+    let res = await get( 'getAllLessons' );
     console.log('got tescers', res)
     this.setState( { teachers: res.teachers } );
+  }
+  getMyLessons = async () => {
+    console.log('getting lessons', this.state.id)
+    let res = await post( 'getUserLessons', { id: this.state.id } );
+    console.log('got lessons', res.lessons)
+    this.setState( { events: res.lessons.map( (p => { 
+      return { start: Date(p.time), end: Date(p.len), title: `${this.state.teachers[p.tid]} - ${this.state.students[p.sid]}` } 
+    } )) } );
   }
   editEvent = (event, e) => {
     console.log('yes', event, e);
@@ -157,14 +136,12 @@ class Body extends React.Component {
     const data = { login: this.state.email, password: this.state.password };
     const body = await post('login', data);
     console.log(body);
-    if (body.data === 0) {
-      this.setState({ page: "Dashboard" })
+    if (body.data >= 0) {
+      this.setState({ page: "Dashboard", id: body.id, isAdminTeacher: body.data })
+      this.getMyLessons();
     }
-    else if (body.data === 1) {
-      this.setState({ page: "Dashboard" })
-    }
-    else if (body.data === 2) {
-      this.setState({ page: "Admin" })
+    if (body.data === 2) {
+      this.setState({ page: "Admin"})
     }
   }
   // When user creates account
@@ -244,28 +221,34 @@ class Body extends React.Component {
       case "Admin":
         return (
           <Admin
-            getStudents= { (e) => this.getStudents() }
-            students=    { this.state.students       }
-            getTeachers= { (e) => this.getTeachers() }
-            teachers=    { this.state.teachers       }
-            addTeacher=  { (e) => this.addTeacher() }
-            opAddTeacher={ this.state.opAddTeacher   }
-            showAddTeach={ (e) => this.setState( {opAddTeacher: true  }) }
-            hideAddTeach={ (e) => this.setState( {opAddTeacher: false }) }
+            getStudents=  { (e) => this.getStudents() }
+            students=     { this.state.students       }
+            getTeachers=  { (e) => this.getTeachers() }
+            teachers=     { this.state.teachers       }
+            addTeacher=   { (e) => this.addTeacher()  }
+            opAddTeacher= { this.state.opAddTeacher   }
+            showAddTeach= { (e) => this.setState( {opAddTeacher: true  }) }
+            hideAddTeach= { (e) => this.setState( {opAddTeacher: false }) }
             addTeachEmail={ this.state.addTeachEmail }
             setTeachEmail={ (e) => this.setState( {addTeachEmail: e} ) }
           />
         )
       default:
-        return (<div>404PageNotFound</div>)
+        return (<div>404NotFound</div>)
     }
   }    
   render(){
     return (
       <div>
         <Header
-          toggle={ e => { this.setState({ isOpen: !this.state.isOpen }) } }
-          isOpen={ this.state.isOpen }
+          toggle=          { e => { this.setState({ isOpen: !this.state.isOpen }) } }
+          isOpen=          { this.state.isOpen }
+          isAdmin=         { (this.state.isAdminTeacher===2) }
+          onSignOut=       { () => { this.setState( {id: null, email: "", password: "", page: 'Login'} ) } }
+          onGoMySchedule = { () => { this.setState( { page: 'MySchedule' } ) } }
+          onGoProfile=     { () => { this.setState( { page: 'Profile'    } ) } }
+          onGoDashboard=   { () => { this.setState( { page: 'Dashboard'  } ) } }
+          onGoAdmin=       { () => { this.setState( { page: 'Admin'      } ) } }
         />
         <Info
           visible = { this.state.showInfo }
