@@ -89,6 +89,14 @@ app.post('/register', (req, res) => {
   });
 });
 
+app.post('/deleteUser', (req, res) => {
+  console.log('delete', req.body);
+  query('DELETE FROM users WHERE email="'+req.body.email+'"', function (err, data) { 
+      if (err) { console.log(err); res.json( { status: false }) }
+      else     { res.json( { status: true }) }
+    });
+});
+
 app.get('/teachers', (req, res) => {
   console.log('teachers');
   query('SELECT * FROM users WHERE isAdminTeacher=1 or isAdminTeacher=2', function (err, data) {

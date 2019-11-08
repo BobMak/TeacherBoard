@@ -10,12 +10,14 @@ import {
   momentLocalizer } from  'react-big-calendar'
 import moment from 'moment'
 
-import Header from './Header';
-import Login from './Login';
-import SignIn from './Signin';
-import Info from './Info';
+import Header  from './Header';
+import Login   from './Login';
+import SignIn  from './Signin';
+import Info    from './Info';
 import { post, get, makeid } from './Utils';
-import Admin from './Admin';
+import Admin   from './Admin';
+import Profile from './Profile';
+import MySchedule from './MySchedule';
 
 require('react-big-calendar/lib/css/react-big-calendar.css')
 var localizer = momentLocalizer(moment)
@@ -34,6 +36,7 @@ class Body extends React.Component {
       page:        "Login",
       modal:         false, // modal state for login/signIn
       opAddTeacher:  false, // modal state for add teacher on Admin page
+      opAccDelete:   false, // modal state for account delete
       currTitle:        "", // Current event title
       currEvent:      null, // The event currently modified in the modal
       oldEvent:       null, // To find index in events on change
@@ -50,6 +53,7 @@ class Body extends React.Component {
       showInfo:     false, // Notification modal state
       typeInfo: 'success', // color
       textInfo:     'Yes', // text
+      safeDelete:      "",
     };
   }
   componentDidMount = async () => {
@@ -250,6 +254,19 @@ class Body extends React.Component {
             hideAddTeach= { (e) => this.setState( {opAddTeacher: false }) }
             addTeachEmail={ this.state.addTeachEmail }
             setTeachEmail={ (e) => this.setState( {addTeachEmail: e} ) }
+          />
+        )
+      case "Profile":
+        return (
+          <Profile
+            email={ this.state.email }
+            fullName={ this.state.fullName }
+            deleteSelf={ () => { post('deleteUser', { email: this.state.email, password: this.state.password1 })  } }
+            opAccDelete= { this.state.opAccDelete }
+            showAccDelete= { (e) => this.setState( { opAccDelete: true } ) }
+            hideAccDelete= { (e) => this.setState( { opAccDelete: false } ) }
+            safeDelete=    { this.state.safeDelete }
+            setSafe= { (e) => this.setState({safeDelete: e}) }
           />
         )
       default:

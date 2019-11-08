@@ -6,6 +6,13 @@ import {
   InputGroup, InputGroupAddon, InputGroupText, Input,
   Modal, ModalHeader, ModalBody, ModalFooter,
 } from 'reactstrap';
+import {
+  Calendar,
+  momentLocalizer 
+} from  'react-big-calendar'
+import moment from 'moment'
+require('react-big-calendar/lib/css/react-big-calendar.css')
+var localizer = momentLocalizer(moment)
 
 class Admin extends React.Component {
   showStudent = ( student ) => {
