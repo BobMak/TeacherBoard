@@ -47,7 +47,7 @@ class Admin extends React.Component {
         </ModalBody>
         <ModalFooter>
           <Button onClick={ this.props.addTeacher } style={{display: "inline-block"}}>{ "Submit" }</Button>
-          <Button onClick={ this.props.hideAddTeach } style={{float: "right"}}>{ "Cancel" }</Button>
+          <Button onClick={ this.props.hideAddTeach } style={{float: "right"}} color={"danger"}>{ "Cancel" }</Button>
         </ModalFooter>
       </Modal>
         <Row>

@@ -22,5 +22,7 @@ connection.query('insert into users (name, email, password, school, isAdminTeach
 connection.query('insert into users (name, email, password, school, isAdminTeacher) values ("AB", "s1@", "te", 1, 0)');
 connection.query('insert into users (name, email, password, school, isAdminTeacher) values ("DC", "s2@", "te", 1, 0)');
 connection.query('insert into lessons (teacherID, studentID, room, time, duration, status) values (2, 3, 1, "2019-11-7 10:10:10", 45, 0)');
+connection.query('insert into lessons (teacherID, studentID, room, time, duration, status) values (1, 3, 1, "2019-11-7 15:10:10", 45, 0)');
+connection.query('insert into lessons (teacherID, studentID, room, time, duration, status) values (1, 4, 1, "2019-11-7 16:10:10", 45, 0)');
 
 connection.end();

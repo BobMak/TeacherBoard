@@ -5,6 +5,7 @@ import {
   Modal, ModalHeader, ModalBody, ModalFooter,
 } from 'reactstrap';
 
+// const gsec = 'm_-2eChy0DHOoJzwA-R6YLh4';
 class SignIn extends React.Component {
   render(){
     return (
@@ -26,28 +27,27 @@ class SignIn extends React.Component {
             <br />
             <InputGroup>
               <Input placeholder="password"
-                value={this.props.password}
-                onChange={e => this.props.setPassword(e.target.value)}
+                value={this.props.password1}
+                onChange={e => this.props.setPassword1(e.target.value)}
                 type="password"/>
             </InputGroup>
             <br />
             <InputGroup>
               <Input placeholder="password"
-                value={this.props.password}
-                onChange={e => this.props.setPassword(e.target.value)}
+                value={this.props.password2}
+                onChange={e => this.props.setPassword2(e.target.value)}
                 type="password"/>
             </InputGroup>
             <br />
             <InputGroup>
-              <InputGroupAddon addonType="prepend">@</InputGroupAddon>
               <Input placeholder="Full name"
                 value={this.props.name}
                 onChange={e => this.props.setName(e.target.value)}
                 type="name"/>
             </InputGroup>
             <br />
-            <Button block bsSize="large" color='danger' disabled={!this.props.validateForm()}
-              onClick={ e => this.props.handleSignIn(e) } type="submit">
+            <Button block bsSize="large" color='danger' disabled={!this.props.validateSignin()}
+              onClick={ e => this.props.handleSignIn() } type="submit">
               Sign In
             </Button>
           </ModalBody>

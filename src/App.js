@@ -9,13 +9,12 @@ import {
   Calendar,
   momentLocalizer } from  'react-big-calendar'
 import moment from 'moment'
-import { GoogleLogout } from 'react-google-login';
 
 import Header from './Header';
 import Login from './Login';
 import SignIn from './Signin';
 import Info from './Info';
-import { post, get } from './Utils';
+import { post, get, makeid } from './Utils';
 import Admin from './Admin';
 
 require('react-big-calendar/lib/css/react-big-calendar.css')
@@ -29,7 +28,8 @@ class Body extends React.Component {
       isAdminTeacher: null,
       email:          "a@", // User email
       addTeachEmail:    "", // Teacher email in add teacher window on Admin page
-      password:      "tea", 
+      password1:     "tea", 
+      password2:        "",
       fullName: "New User",
       page:        "Login",
       modal:         false, // modal state for login/signIn
@@ -129,11 +129,14 @@ class Body extends React.Component {
     }
     this.setState( {opAddTeacher: false });
   }
-  validateForm = () => {
-    return this.state.email.length > 0 && this.state.password.length > 0;
+  validateLogin = () => {
+    return this.state.email.length > 0 && this.state.password1.length > 0;
+  }
+  validateSignin = () => {
+    return this.state.email.length > 0 && this.state.email.includes('@') && this.state.password1.length > 0 && this.state.password1===this.state.password2;
   }
   handleLogIn = async (event) => {
-    const data = { login: this.state.email, password: this.state.password };
+    const data = { login: this.state.email, password: this.state.password1 };
     const body = await post('login', data);
     console.log(body);
     if (body.data >= 0) {
@@ -145,13 +148,27 @@ class Body extends React.Component {
     }
   }
   // When user creates account
-  handleSignUp = async (event) => {
+  handleSignUp = async () => {
     console.log('New user');
-    let res = await post('register', { email: this.state.email, password: this.state.password, fullName: this.state.fullName } );
+    let res = await post('register', { email: this.state.email, password: this.state.password1, fullName: this.state.fullName } );
     if ( res.status == true ) { 
       this.setState({ page: "Dashboard" });
       this.showInfo( `Welcome, ${this.state.fullName}!`, "success");
     } 
+  }
+  handleGoogleSignIn = async (user) => {
+    this.setState( { email: user.getEmail(), fullName: user.getName() } ); 
+    const res = await post('userExists', { email: this.state.email });
+    if ( res.status>-1 ) {
+      this.setState({ page: "Dashboard", id: res.id, isAdminTeacher: res.status });
+    }
+    else {
+      let reg = await post('register', { email: this.state.email, password: makeid(20), fullName: this.state.fullName } );
+      if ( reg.status == true ) { 
+        this.setState({ page: "Dashboard" });
+        this.showInfo( `Welcome, ${this.state.fullName}!`, "success");
+      } 
+    }
   }
   showInfo(message, type) {
     this.setState( {showInfo: true, textInfo: message, typeInfo: type} )
@@ -198,22 +215,24 @@ class Body extends React.Component {
       case "Login":
         return (
           <Login 
-            validateForm={ this.validateForm                          }
+            validateForm={ this.validateLogin                          }
             email=       { this.state.email                           }
-            password=    { this.state.password                        }
+            password=    { this.state.password1                       }
             setEmail=    { e => { this.setState({ email: e }) }       }
-            setPassword= { e => { this.setState({ password: e }) }    }
+            setPassword= { e => { this.setState({ password1: e }) }    }
             handleLogIn= { this.handleLogIn                           }
             handleSignIn={ e => { this.setState({ page: "SignIn" }) } }
+            handleGoogleSignIn={ this.handleGoogleSignIn }
           />
         )
       case "SignIn":
         return (
           <SignIn 
-            validateForm={ this.validateForm                         }
-            setEmail=    { e => { this.setState({ email   : e }) }   }
-            setName=     { e => { this.setState({ fullName: e }) }   }
-            setPassword= { e => { this.setState({ password: e }) }   }
+            validateSignin={ this.validateSignin                      }
+            setEmail=    { e => { this.setState({ email    : e }) }   }
+            setName=     { e => { this.setState({ fullName : e }) }   }
+            setPassword1={ e => { this.setState({ password1: e }) }   }
+            setPassword2={ e => { this.setState({ password2: e }) }   }
             handleSignIn={ this.handleSignUp                         }
             handleLogIn= { e => { this.setState({ page: "Login" }) } }
           />
@@ -244,7 +263,7 @@ class Body extends React.Component {
           toggle=          { e => { this.setState({ isOpen: !this.state.isOpen }) } }
           isOpen=          { this.state.isOpen }
           isAdmin=         { (this.state.isAdminTeacher===2) }
-          onSignOut=       { () => { this.setState( {id: null, email: "", password: "", page: 'Login'} ) } }
+          onSignOut=       { () => { this.setState( {id: null, email: "", password1: "", page: 'Login'} ) } }
           onGoMySchedule = { () => { this.setState( { page: 'MySchedule' } ) } }
           onGoProfile=     { () => { this.setState( { page: 'Profile'    } ) } }
           onGoDashboard=   { () => { this.setState( { page: 'Dashboard'  } ) } }

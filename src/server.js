@@ -67,6 +67,15 @@ app.post('/login', (req, res) => {
     });
 });
 
+app.post('/userExists', (req, res) => {
+  console.log(req.body);
+  query('SELECT id, isAdminTeacher FROM users WHERE email="'+req.body.email+'"', function (err, data) { 
+      if (err)                   { res.json( { status:-2 }) }
+      else if (data.length===0)  { res.json( { status:-1 }) }
+      else                       { res.json( { status: data[0].isAdminTeacher, id: data[0].id }) }
+    });
+});
+
 app.post('/register', (req, res) => {
   console.log(req.body);
   query('SELECT * FROM users WHERE email="'+req.body.email+'"', function (err, data) {
