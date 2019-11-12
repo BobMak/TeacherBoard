@@ -2,6 +2,24 @@
 
 A tool for managing individual lessons. [Link](http://myteacherboard.com/)
 
+
+## Screenshots
+
+### Login
+![Imgur](https://imgur.com/ShBI0pX.png)
+
+### Dashboard
+![Imgur](https://imgur.com/fVZSZUf.png)
+
+### Profile
+![Imgur](https://i.imgur.com/J6KKfLI.png)
+
+### Delete Profile
+![Imgur](https://imgur.com/LUA0eRv.png)
+
+### Admin page
+![Imgur](https://i.imgur.com/Oe8hmvp.png)
+
 ## Development
 
 ### Install node modules
