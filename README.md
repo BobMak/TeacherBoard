@@ -1,6 +1,6 @@
 ## Teacher Board
 
-A tool for managing individual lessons. [Link](http://myteacherboard.com/)
+A tool for managing individual lessons.
 
 
 ## Screenshots
